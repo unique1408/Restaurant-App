@@ -8,4 +8,6 @@ RUN chmod +x mvnw
 
 RUN ./mvnw clean package -DskipTests
 
-CMD ["sh","-c","java -jar target/*.jar"]
+EXPOSE 8080
+
+CMD ["java","-jar","target/RestaurantApp-0.0.1-SNAPSHOT.jar"]
