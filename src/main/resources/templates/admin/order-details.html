@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Order Details</title>
+
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background: #f4f6f9;
+			padding: 40px;
+		}
+
+		.container {
+			max-width: 900px;
+			margin: auto;
+			background: white;
+			padding: 30px;
+			border-radius: 10px;
+			box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+		}
+
+		h2 {
+			text-align: center;
+			color: #2c3e50;
+			margin-bottom: 25px;
+		}
+
+		.info-grid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 15px;
+			margin-bottom: 25px;
+		}
+
+		.info-box {
+			background: #f8f9fa;
+			padding: 12px;
+			border-radius: 6px;
+		}
+
+		.label {
+			font-weight: bold;
+			color: #555;
+		}
+
+		.status {
+			padding: 6px 10px;
+			border-radius: 6px;
+			background: #fff3cd;
+			color: #856404;
+		}
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 20px;
+		}
+
+		th {
+			background: #2c3e50;
+			color: white;
+			padding: 10px;
+		}
+
+		td {
+			padding: 10px;
+			border-bottom: 1px solid #ddd;
+		}
+
+		.btn {
+			padding: 8px 14px;
+			border: none;
+			border-radius: 6px;
+			cursor: pointer;
+			margin-top: 20px;
+		}
+
+		.confirm {
+			background: #28a745;
+			color: white;
+		}
+
+		.deliver {
+			background: #007bff;
+			color: white;
+		}
+
+		.back {
+			background: #6c757d;
+			color: white;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div class="container">
+
+		<h2>Order Details</h2>
+
+		<div class="info-grid">
+
+			<div class="info-box">
+				<span class="label">Order ID:</span>
+				<span th:text="${order.id}"></span>
+			</div>
+
+			<div class="info-box">
+				<span class="label">Customer:</span>
+				<span th:text="${order.user.username}"></span>
+			</div>
+
+			<div class="info-box">
+				<span class="label">Order Date:</span>
+				<span th:text="${#temporals.format(order.orderDate,'dd MMM yyyy HH:mm')}"></span>
+			</div>
+
+			<div class="info-box">
+				<span class="label">Status:</span>
+				<span class="status" th:text="${order.status}"></span>
+			</div>
+
+		</div>
+
+		<h3>Ordered Items</h3>
+
+		<table>
+
+			<tr>
+				<th>Dish</th>
+				<th>Quantity</th>
+				<th>Price</th>
+			</tr>
+
+			<tr th:each="item : ${order.items}">
+				<td th:text="${item.dish.name}"></td>
+				<td th:text="${item.quantity}"></td>
+				<td>₹<span th:text="${item.price}"></span></td>
+			</tr>
+
+		</table>
+
+		<h3 style="margin-top:20px;">
+			Total: ₹<span th:text="${order.totalAmount}"></span>
+		</h3>
+
+		<form th:action="@{/admin/orders/update-status}" method="post">
+
+		<input type="hidden" name="orderId" th:value="${order.id}"/>
+
+		<button name="status" value="CONFIRMED">Confirm</button>
+
+		<button name="status" value="PREPARING">Preparing</button>
+
+		<button name="status" value="READY">Ready</button>
+
+		<button name="status" value="DELIVERED">Delivered</button>
+
+		</form>
+
+		<br>
+
+		<a th:href="@{/admin/dashboard}">
+			<button class="btn back">Back</button>
+		</a>
+
+	</div>
+
+</body>
+
+</html>

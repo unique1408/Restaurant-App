@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - RestaurantApp</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <img th:src="@{/images/logo.png}" alt="Restaurant Logo" height="50">
+                <span>LINI RESTAURANT</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a th:href="@{/}">Home</a></li>
+                <li><a th:href="@{/menu}">Menu</a></li>
+                <li><a th:href="@{/about}">About</a></li>
+                <li><a th:href="@{/contact}">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Registration Form Section -->
+    <section class="auth-section">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h2>Create Account</h2>
+                    <p>Join us for delicious meals</p>
+                </div>
+
+                <!-- Error Message -->
+                <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+                <!-- Registration Form -->
+                <form th:action="@{/user/register}" th:object="${user}" method="post" class="auth-form">
+                    <div class="form-group">
+                        <label for="fullName">Full Name *</label>
+                        <input type="text" 
+                               id="fullName" 
+                               th:field="*{fullName}" 
+                               placeholder="Enter your full name" 
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="username">Username *</label>
+                        <input type="text" 
+                               id="username" 
+                               th:field="*{username}" 
+                               placeholder="Choose a username" 
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" 
+                               id="email" 
+                               th:field="*{email}" 
+                               placeholder="Enter your email" 
+                               required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="password">Password *</label>
+                            <input type="password" 
+                                   id="password" 
+                                   th:field="*{password}" 
+                                   placeholder="Create password" 
+                                   required>
+                        </div>
+                        <div class="form-group half">
+                            <label for="confirmPassword">Confirm Password *</label>
+                            <input type="password" 
+                                   id="confirmPassword" 
+                                   name="confirmPassword" 
+                                   placeholder="Confirm password" 
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phoneNumber">Phone Number</label>
+                        <input type="tel" 
+                               id="phoneNumber" 
+                               th:field="*{phoneNumber}" 
+                               placeholder="Enter your phone number">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">Delivery Address</label>
+                        <textarea id="address" 
+                                  th:field="*{address}" 
+                                  placeholder="Enter your delivery address" 
+                                  rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group terms">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="terms" required>
+                            <span>I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a></span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-auth">Register</button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Already have an account? <a th:href="@{/login}">Login here</a></p>
+                </div>
+
+                <!-- Password Requirements -->
+                <div class="password-requirements">
+                    <p><strong>Password must contain:</strong></p>
+                    <ul>
+                        <li>At least 8 characters</li>
+                        <li>At least one uppercase letter</li>
+                        <li>At least one lowercase letter</li>
+                        <li>At least one number</li>
+                        <li>At least one special character</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>RestaurantApp</h3>
+                <p>Serving delicious meals since 2024</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a th:href="@{/}">Home</a></li>
+                    <li><a th:href="@{/menu}">Menu</a></li>
+                    <li><a th:href="@{/about}">About</a></li>
+                    <li><a th:href="@{/contact}">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 RestaurantApp. All rights reserved.</p>
+        </div>
+    </footer>
+
+	<style>
+	    body {
+	        margin: 0;
+	        font-family: 'Segoe UI', sans-serif;
+	        background: linear-gradient(135deg, #667eea, #764ba2);
+	        min-height: 100vh;
+	    }
+
+	    .auth-section {
+	        display: flex;
+	        justify-content: center;
+	        align-items: center;
+	        padding: 60px 20px;
+	    }
+
+	    .auth-container {
+	        width: 100%;
+	        max-width: 500px;
+	    }
+
+	    .auth-card {
+	        background: rgba(255, 255, 255, 0.15);
+	        backdrop-filter: blur(15px);
+	        border-radius: 15px;
+	        padding: 2.5rem;
+	        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+	        color: #fff;
+	        animation: fadeIn 0.6s ease-in-out;
+	    }
+
+	    .auth-header {
+	        text-align: center;
+	        margin-bottom: 2rem;
+	    }
+
+	    .auth-header h2 {
+	        margin: 0;
+	        font-size: 2rem;
+	        font-weight: 600;
+	    }
+
+	    .auth-header p {
+	        margin-top: 0.5rem;
+	        opacity: 0.85;
+	    }
+
+	    .form-group {
+	        margin-bottom: 1.3rem;
+	    }
+
+	    label {
+	        display: block;
+	        margin-bottom: 0.4rem;
+	        font-size: 0.9rem;
+	        font-weight: 500;
+	    }
+
+	    input, textarea {
+	        width: 100%;
+	        padding: 0.75rem;
+	        border-radius: 8px;
+	        border: none;
+	        font-size: 0.95rem;
+	        background: rgba(255, 255, 255, 0.2);
+	        color: #fff;
+	        transition: 0.3s;
+	    }
+
+	    input::placeholder,
+	    textarea::placeholder {
+	        color: rgba(255, 255, 255, 0.7);
+	    }
+
+	    input:focus,
+	    textarea:focus {
+	        outline: none;
+	        background: rgba(255, 255, 255, 0.3);
+	        box-shadow: 0 0 0 2px #fff;
+	    }
+
+	    .form-row {
+	        display: flex;
+	        gap: 1rem;
+	    }
+
+	    .form-group.half {
+	        flex: 1;
+	    }
+
+	    .terms {
+	        margin-top: 1rem;
+	        font-size: 0.85rem;
+	    }
+
+	    .terms a {
+	        color: #ffd369;
+	        text-decoration: none;
+	    }
+
+	    .btn-auth {
+	        width: 100%;
+	        padding: 0.9rem;
+	        margin-top: 1.5rem;
+	        border-radius: 8px;
+	        border: none;
+	        font-size: 1rem;
+	        font-weight: bold;
+	        cursor: pointer;
+	        background: #ffd369;
+	        color: #333;
+	        transition: 0.3s;
+	    }
+
+	    .btn-auth:hover {
+	        background: #ffc107;
+	        transform: translateY(-2px);
+	        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+	    }
+
+	    .auth-footer {
+	        margin-top: 1.5rem;
+	        text-align: center;
+	        font-size: 0.9rem;
+	    }
+
+	    .auth-footer a {
+	        color: #ffd369;
+	        text-decoration: none;
+	        font-weight: bold;
+	    }
+
+	    .alert-error {
+	        background: rgba(255, 0, 0, 0.2);
+	        padding: 0.75rem;
+	        border-radius: 6px;
+	        margin-bottom: 1rem;
+	        text-align: center;
+	    }
+
+	    .password-requirements {
+	        margin-top: 1.5rem;
+	        background: rgba(255, 255, 255, 0.1);
+	        padding: 1rem;
+	        border-radius: 8px;
+	        font-size: 0.8rem;
+	    }
+
+	    .password-requirements ul {
+	        margin: 0.5rem 0 0 1rem;
+	    }
+
+	    .navbar {
+	        background: rgba(0, 0, 0, 0.4);
+	        padding: 0.8rem 0;
+	    }
+
+	    .nav-container {
+	        width: 90%;
+	        margin: auto;
+	        display: flex;
+	        justify-content: space-between;
+	        align-items: center;
+	    }
+
+	    .nav-menu {
+	        list-style: none;
+	        display: flex;
+	        gap: 1.5rem;
+	    }
+
+	    .nav-menu a {
+	        color: #fff;
+	        text-decoration: none;
+	        font-weight: 500;
+	        transition: 0.3s;
+	    }
+
+	    .nav-menu a:hover {
+	        color: #ffd369;
+	    }
+
+	    .footer {
+	        background: #111;
+	        color: #aaa;
+	        padding: 2rem 0;
+	        text-align: center;
+	        margin-top: 3rem;
+	    }
+
+	    @keyframes fadeIn {
+	        from {
+	            opacity: 0;
+	            transform: translateY(20px);
+	        }
+	        to {
+	            opacity: 1;
+	            transform: translateY(0);
+	        }
+	    }
+
+	    @media (max-width: 768px) {
+	        .form-row {
+	            flex-direction: column;
+	        }
+	    }
+	</style>
+
+    <script>
+        // Client-side password validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Passwords do not match!');
+                return;
+            }
+            
+            // Password strength validation
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            if (!passwordRegex.test(password)) {
+                e.preventDefault();
+                alert('Password does not meet the requirements!');
+                return;
+            }
+        });
+    </script>
+</body>
+</html>

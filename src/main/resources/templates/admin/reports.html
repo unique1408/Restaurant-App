@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Admin Reports</title>
+
+	<style>
+		body {
+			font-family: Arial, Helvetica, sans-serif;
+			background: #f4f6f9;
+			margin: 0;
+		}
+
+		/* header */
+		.header {
+			background: #2c3e50;
+			color: white;
+			padding: 20px;
+			text-align: center;
+		}
+
+		/* container */
+		.container {
+			width: 90%;
+			margin: 40px auto;
+		}
+
+		/* cards layout */
+		.cards {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 20px;
+		}
+
+		/* card */
+		.card {
+			background: white;
+			padding: 30px;
+			border-radius: 10px;
+			box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+			text-align: center;
+			transition: 0.3s;
+		}
+
+		.card:hover {
+			transform: translateY(-5px);
+		}
+
+		.card h3 {
+			color: #555;
+			margin-bottom: 10px;
+		}
+
+		.card p {
+			font-size: 28px;
+			font-weight: bold;
+			color: #2c3e50;
+		}
+
+		/* colors */
+
+		.orders {
+			border-top: 5px solid #3498db;
+		}
+
+		.revenue {
+			border-top: 5px solid #2ecc71;
+		}
+
+		.users {
+			border-top: 5px solid #f39c12;
+		}
+
+		.dishes {
+			border-top: 5px solid #e74c3c;
+		}
+
+		/* button */
+
+		.back-btn {
+			display: inline-block;
+			margin-top: 40px;
+			padding: 10px 20px;
+			background: #3498db;
+			color: white;
+			text-decoration: none;
+			border-radius: 5px;
+		}
+
+		.back-btn:hover {
+			background: #2980b9;
+		}
+	</style>
+
+</head>
+
+<body>
+
+	<div class="header">
+		<h2>Restaurant Reports Dashboard</h2>
+	</div>
+
+	<div class="container">
+
+		<div class="cards">
+
+			<div class="card orders">
+				<h3>Total Orders</h3>
+				<p th:text="${totalOrders}"></p>
+			</div>
+
+			<div class="card revenue">
+				<h3>Total Revenue</h3>
+				<p>₹ <span th:text="${totalRevenue}"></span></p>
+			</div>
+
+			<div class="card users">
+				<h3>Total Users</h3>
+				<p th:text="${totalUsers}"></p>
+			</div>
+
+			<div class="card dishes">
+				<h3>Available Dishes</h3>
+				<p th:text="${availableDishes}"></p>
+			</div>
+
+		</div>
+
+		<center>
+			<a th:href="@{/admin/dashboard}" class="back-btn">Back to Dashboard</a>
+		</center>
+
+	</div>
+
+</body>
+
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Contact Us - RestaurantApp</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<section class="page-section">
+    <div class="page-container">
+        <h1>Contact Us</h1>
+        <p>We would love to hear from you!</p>
+
+        <form class="contact-form">
+            <input type="text" placeholder="Your Name" required>
+            <input type="email" placeholder="Your Email" required>
+            <textarea placeholder="Your Message" rows="5" required></textarea>
+            <button type="submit">Send Message</button>
+        </form>
+
+        <div class="contact-info">
+            <p>📍 KPHB,Hyderabad</p>
+            <p>📞 +91 6301217871</p>
+            <p>✉️ info@lini.com</p>
+        </div>
+    </div>
+</section>
+
+</body>
+</html>

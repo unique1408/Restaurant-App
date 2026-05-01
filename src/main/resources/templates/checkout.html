@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - RestaurantApp</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <img th:src="@{/images/logo.png}" alt="Restaurant Logo" height="50">
+                <span>LINI RESTAURANT</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a th:href="@{/}">Home</a></li>
+                <li><a th:href="@{/menu}">Menu</a></li>
+                <li><a th:href="@{/about}">About</a></li>
+                <li><a th:href="@{/contact}">Contact</a></li>
+                <li class="nav-cart">
+                    <a th:href="@{/cart}">
+                        🛒 Cart
+                        <span class="cart-count" th:text="${cart != null ? cart.items.size() : 0}">0</span>
+                    </a>
+                </li>
+                <li class="nav-auth" sec:authorize="isAuthenticated()">
+                    <span class="welcome-text" sec:authentication="name">User</span>
+                    <a th:href="@{/logout}" class="btn-logout">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Checkout Section -->
+    <section class="checkout-section">
+        <div class="checkout-container">
+            <h1>Checkout</h1>
+
+            <!-- Checkout Steps -->
+            <div class="checkout-steps">
+                <div class="step active">
+                    <span class="step-number">1</span>
+                    <span class="step-label">Delivery Details</span>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <span class="step-label">Payment Method</span>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <span class="step-label">Place Order</span>
+                </div>
+            </div>
+
+            <div class="checkout-content">
+                <!-- Order Summary -->
+                <div class="order-summary">
+                    <h2>Your Order</h2>
+                    <div class="order-items">
+                        <div class="order-item" th:each="item : ${cart.items}">
+                            <div class="item-info">
+                                <span class="item-name" th:text="${item.dish.name}">Dish Name</span>
+                                <span class="item-quantity" th:text="'x' + ${item.quantity}">x1</span>
+                            </div>
+                            <span class="item-price" th:text="'₹' + ${item.subtotal}">$0.00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="order-totals">
+                        <div class="total-row">
+                            <span>Subtotal:</span>
+                            <span th:text="'₹' + ${cart.totalPrice}">$0.00</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Delivery Fee:</span>
+                            <span th:text="${cart.totalPrice > 50 ? 'Free' : '$5.00'}">₹5.00</span>
+                        </div>
+                        <div class="total-row grand-total">
+                            <span>Total:</span>
+                            <span th:text="'₹' + ${cart.totalPrice + (cart.totalPrice > 50 ? 0 : 5)}">₹0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Checkout Form -->
+                <div class="checkout-form">
+                    <form id="checkoutForm" th:action="@{/place-order}" method="post">
+                        <!-- Delivery Details -->
+                        <div class="form-section">
+                            <h3>Delivery Details</h3>
+                            
+                            <div class="form-group">
+                                <label for="fullName">Full Name *</label>
+                                <input type="text" 
+                                       id="fullName" 
+                                       name="fullName" 
+                                       th:value="${user.fullName}"
+                                       placeholder="Enter your full name" 
+                                       required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="phoneNumber">Phone Number *</label>
+                                <input type="tel" 
+                                       id="phoneNumber" 
+                                       name="phoneNumber" 
+                                       th:value="${user.phoneNumber}"
+                                       placeholder="Enter your phone number" 
+                                       required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">Email Address *</label>
+                                <input type="email" 
+                                       id="email" 
+                                       name="email" 
+                                       th:value="${user.email}"
+                                       placeholder="Enter your email" 
+                                       required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="deliveryAddress">Delivery Address *</label>
+                                <textarea id="deliveryAddress" 
+                                          name="deliveryAddress" 
+                                          th:text="${user.address}"
+                                          placeholder="Enter your complete delivery address" 
+                                          rows="4" 
+                                          required></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="deliveryInstructions">Delivery Instructions (Optional)</label>
+                                <textarea id="deliveryInstructions" 
+                                          name="deliveryInstructions" 
+                                          placeholder="Any special instructions for delivery (e.g., gate code, landmark)" 
+                                          rows="3"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Payment Method -->
+                        <div class="form-section">
+                            <h3>Payment Method</h3>
+                            
+                            <div class="payment-options">
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="CASH" checked>
+                                    <span class="payment-details">
+                                        <span class="payment-name">Cash on Delivery</span>
+                                        <span class="payment-desc">Pay with cash when you receive your order</span>
+                                    </span>
+                                </label>
+
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="CARD">
+                                    <span class="payment-details">
+                                        <span class="payment-name">Credit/Debit Card</span>
+                                        <span class="payment-desc">Pay securely with your card</span>
+                                    </span>
+                                </label>
+
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="UPI">
+                                    <span class="payment-details">
+                                        <span class="payment-name">UPI</span>
+                                        <span class="payment-desc">Pay using Google Pay, PhonePe, etc.</span>
+                                    </span>
+                                </label>
+                            </div>
+
+                            <!-- Card Details (shown when card selected) -->
+                            <div id="cardDetails" class="card-details" style="display: none;">
+                                <h4>Card Details</h4>
+                                <div class="form-group">
+                                    <label for="cardNumber">Card Number</label>
+                                    <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456">
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group half">
+                                        <label for="expiryDate">Expiry Date</label>
+                                        <input type="text" id="expiryDate" placeholder="MM/YY">
+                                    </div>
+                                    <div class="form-group half">
+                                        <label for="cvv">CVV</label>
+                                        <input type="text" id="cvv" placeholder="123">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="cardName">Name on Card</label>
+                                    <input type="text" id="cardName" placeholder="As shown on card">
+                                </div>
+                            </div>
+
+                            <!-- UPI Details (shown when UPI selected) -->
+                            <div id="upiDetails" class="upi-details" style="display: none;">
+                                <h4>UPI Details</h4>
+                                <div class="form-group">
+                                    <label for="upiId">UPI ID</label>
+                                    <input type="text" id="upiId" placeholder="username@okhdfcbank">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="form-section">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="terms" required>
+                                <span>I agree to the <a href="#">Terms & Conditions</a> and confirm my order</span>
+                            </label>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="form-actions">
+                            <a th:href="@{/cart}" class="btn-secondary">← Back to Cart</a>
+                            <button type="submit" class="btn-place-order" id="placeOrderBtn">Place Order</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Order Confirmation Modal -->
+    <div id="orderConfirmationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Order Placed Successfully! 🎉</h2>
+            </div>
+            <div class="modal-body">
+                <div class="success-icon">✅</div>
+                <p>Your order has been placed successfully.</p>
+                <p>Order ID: <strong id="orderId"></strong></p>
+                <p>We'll deliver your order within 30-45 minutes.</p>
+            </div>
+            <div class="modal-footer">
+                <a th:href="@{/menu}" class="btn-primary">Continue Shopping</a>
+                <a th:href="@{/orders}" class="btn-secondary">View Orders</a>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .checkout-section {
+            padding: 3rem 1rem;
+            background: #f8f9fa;
+            min-height: calc(100vh - 200px);
+        }
+        
+        .checkout-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .checkout-container h1 {
+            margin-bottom: 2rem;
+            color: #333;
+        }
+        
+        .checkout-steps {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #999;
+        }
+        
+        .step.active {
+            color: #ff6b6b;
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            background: #eee;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .step.active .step-number {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .checkout-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+        }
+        
+        .order-summary {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        
+        .order-summary h2 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        
+        .order-items {
+            margin-bottom: 1rem;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .item-info {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .item-name {
+            color: #333;
+        }
+        
+        .item-quantity {
+            color: #999;
+        }
+        
+        .order-totals {
+            margin-top: 1rem;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            color: #666;
+        }
+        
+        .grand-total {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            border-top: 2px solid #eee;
+            padding-top: 1rem;
+            margin-top: 0.5rem;
+        }
+        
+        .checkout-form {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .form-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .form-section h3 {
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ff6b6b;
+        }
+        
+        .payment-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .payment-option {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .payment-option:hover {
+            border-color: #ff6b6b;
+        }
+        
+        .payment-option input[type="radio"] {
+            width: auto;
+        }
+        
+        .payment-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .payment-name {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .payment-desc {
+            font-size: 0.85rem;
+            color: #999;
+        }
+        
+        .card-details,
+        .upi-details {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .card-details h4,
+        .upi-details h4 {
+            margin-bottom: 1rem;
+            color: #666;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+        
+        .checkbox-container a {
+            color: #ff6b6b;
+            text-decoration: none;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .btn-secondary {
+            flex: 1;
+            padding: 1rem;
+            background: #6c757d;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-place-order {
+            flex: 2;
+            padding: 1rem;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-place-order:hover {
+            background: #218838;
+        }
+        
+        .btn-place-order:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .modal-footer .btn-primary,
+        .modal-footer .btn-secondary {
+            flex: 1;
+            padding: 0.75rem;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .checkout-steps {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+            
+            .checkout-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+
+    <script>
+        // Show/hide payment details based on selection
+        document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.getElementById('cardDetails').style.display = 'none';
+                document.getElementById('upiDetails').style.display = 'none';
+                
+                if (this.value === 'CARD') {
+                    document.getElementById('cardDetails').style.display = 'block';
+                } else if (this.value === 'UPI') {
+                    document.getElementById('upiDetails').style.display = 'block';
+                }
+            });
+        });
+
+//        // Form submission
+//        document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+//            e.preventDefault();
+//            
+//            const placeOrderBtn = document.getElementById('placeOrderBtn');
+//            placeOrderBtn.disabled = true;
+//            placeOrderBtn.textContent = 'Placing Order...';
+//            
+//            // Simulate order placement (replace with actual API call)
+//            setTimeout(function() {
+//                const modal = document.getElementById('orderConfirmationModal');
+//                document.getElementById('orderId').textContent = 'ORD' + Math.floor(Math.random() * 10000);
+//                modal.style.display = 'block';
+//                placeOrderBtn.disabled = false;
+//                placeOrderBtn.textContent = 'Place Order';
+//            }, 2000);
+//        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('orderConfirmationModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+                window.location.href = '/menu';
+            }
+        }
+    </script>
+</body>
+</html>

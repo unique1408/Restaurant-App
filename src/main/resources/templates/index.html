@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant App - Home</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+	
+	<style>
+		.nav-auth{
+		    display: flex;
+		    align-items: center;
+		    gap: 12px;
+		}
+
+		.nav-auth form{
+		    margin: 0;
+		}
+
+		.welcome-text{
+		    font-size: 15px;
+		    font-weight: 500;
+		    color: #333;
+		}
+
+		.btn-logout{
+		    background-color: white;
+		    color: #ffffff;
+		    border: none;
+		    padding: 7px 16px;
+		    border-radius: 6px;
+		    cursor: pointer;
+		    font-size: 14px;
+		    font-weight: 500;
+		    display: inline-block;
+		    text-align: center;
+		    transition: all 0.3s ease;
+		}
+
+		.btn-logout:hover{
+		    background-color: white;
+		    transform: scale(1.05);
+		}
+
+		.btn-logout:focus{
+		    outline: none;
+		}
+	</style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <img th:src="@{/images/logo.png}" alt="Restaurant Logo" height="50">
+                <span>LINI RESTAURANT</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a th:href="@{/}" class="active">Home</a></li>
+                <li><a th:href="@{/menu}">Menu</a></li>
+				<li sec:authorize="isAuthenticated()">
+				    <a th:href="@{/orders}">My Orders</a>
+				</li>
+                <li><a th:href="@{/about}">About</a></li>
+                <li><a th:href="@{/contact}">Contact</a></li>
+                <li class="nav-cart">
+                    <a th:href="@{/cart}">
+                        🛒 Cart
+                        <span class="cart-count" th:text="${session.cartCount ?: 0}">0</span>
+                    </a>
+                </li>
+                <li class="nav-auth" sec:authorize="!isAuthenticated()">
+                    <a th:href="@{/login}" class="btn-login">Login</a>
+                    <a th:href="@{/user/register}" class="btn-register">Register</a>
+                </li>
+				<li class="nav-auth" sec:authorize="isAuthenticated()">
+				    <span class="welcome-text" sec:authentication="name">User</span>
+				    
+				    <form th:action="@{/logout}" method="post" style="display:inline;">
+				        <button type="submit" class="btn-logout" >Logout</button>
+				    </form>
+				</li>
+                <li sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/admin/dashboard}" class="btn-admin">Admin</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 th:text="${welcomeMessage}">Welcome to Our Restaurant</h1>
+            <p>Experience the finest dining with our delicious meals prepared by expert chefs</p>
+            <a th:href="@{/menu}" class="btn-primary">View Menu</a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <h2>Why Choose Us</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🍽️</div>
+                <h3>Quality Food</h3>
+                <p>Fresh ingredients prepared with care</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🚚</div>
+                <h3>Fast Delivery</h3>
+                <p>Free delivery within 30 minutes</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💳</div>
+                <h3>Easy Payment</h3>
+                <p>Multiple payment options available</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎉</div>
+                <h3>Special Offers</h3>
+                <p>Daily deals and discounts</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Dishes -->
+    <section class="popular-dishes">
+        <h2>Popular Dishes</h2>
+        <div class="dishes-grid" id="popular-dishes">
+            <!-- Dishes will be loaded via JavaScript -->
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>RestaurantApp</h3>
+                <p>Serving delicious meals since 2024</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a th:href="@{/}">Home</a></li>
+                    <li><a th:href="@{/menu}">Menu</a></li>
+                    <li><a th:href="@{/about}">About</a></li>
+                    <li><a th:href="@{/contact}">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Info</h3>
+                <p>📍 KPHB,Hyderabad</p>
+                <p>📞 +91 6301217871</p>
+                <p>✉️ info@lini.com</p>
+            </div>
+            <div class="footer-section">
+                <h3>Follow Us</h3>
+                <div class="social-links">
+                    <a href="https://www.instagram.com/reel/DVvqOTriQdG/?igsh=MWM1anA3MG80cmU3aA=="> <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8lv-iEOWtRxGDqsOR-Pa1kIiqN298569zVA&s" style="height: 25px; width: 25px;"  > </a>
+                    <a href="mailto:nikhilgollamandala555@gmail.com"><img src="https://static.vecteezy.com/system/resources/previews/022/484/516/non_2x/google-mail-gmail-icon-logo-symbol-free-png.png" style="height: 25px; width: 25px;"  ></a>
+       
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 LINI RESTAURANT. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script th:src="@{/js/script.js}"></script>
+    <script>
+        // Load popular dishes on homepage
+        fetch('/api/dishes/popular')
+            .then(response => response.json())
+            .then(dishes => {
+                const container = document.getElementById('popular-dishes');
+                if (dishes.length > 0) {
+                    container.innerHTML = dishes.slice(0, 4).map(dish => `
+                        <div class="dish-card">
+                            <img src="${dish.imagePath || '/images/dish1.jpg'}" alt="${dish.name}">
+                            <h3>${dish.name}</h3>
+                            <p>${dish.description.substring(0, 50)}...</p>
+                            <span class="price">$${dish.price}</span>
+                            <button onclick="addToCart(${dish.id})" class="btn-add">Add to Cart</button>
+                        </div>
+                    `).join('');
+                }
+            });
+    </script>
+</body>
+</html>

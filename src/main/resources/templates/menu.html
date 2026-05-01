@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Menu - RestaurantApp</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+	
+	<style>
+			.nav-auth{
+			    display: flex;
+			    align-items: center;
+			    gap: 12px;
+			}
+
+			.nav-auth form{
+			    margin: 0;
+			}
+
+			.welcome-text{
+			    font-size: 15px;
+			    font-weight: 500;
+			    color: #333;
+			}
+
+			.btn-logout{
+			    background-color: white;
+			    color: #ffffff;
+			    border: none;
+			    padding: 7px 16px;
+			    border-radius: 6px;
+			    cursor: pointer;
+			    font-size: 14px;
+			    font-weight: 500;
+			    display: inline-block;
+			    text-align: center;
+			    transition: all 0.3s ease;
+			}
+
+			.btn-logout:hover{
+			    background-color: white;
+			    transform: scale(1.05);
+			}
+
+			.btn-logout:focus{
+			    outline: none;
+			}
+		</style>
+	
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <img th:src="@{/images/logo.png}" alt="Restaurant Logo" height="50">
+                <span>LINI RESTAURANT</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a th:href="@{/}">Home</a></li>
+                <li><a th:href="@{/menu}" class="active">Menu</a></li>
+				<li sec:authorize="isAuthenticated()">
+				    <a th:href="@{/orders}">My Orders</a>
+				</li>
+                <li><a th:href="@{/about}">About</a></li>
+                <li><a th:href="@{/contact}">Contact</a></li>
+                <li class="nav-cart">
+                    <a th:href="@{/cart}">
+                        🛒 Cart
+                        <span class="cart-count" th:text="${session.cartCount ?: 0}">0</span>
+                    </a>
+                </li>
+                <li class="nav-auth" sec:authorize="!isAuthenticated()">
+                    <a th:href="@{/login}" class="btn-login">Login</a>
+                    <a th:href="@{/register}" class="btn-register">Register</a>
+                </li>
+				<li class="nav-auth" sec:authorize="isAuthenticated()">
+					<span class="welcome-text" sec:authentication="name">User</span>
+				
+					<form th:action="@{/logout}" method="post" style="display:inline;">
+						<button type="submit" class="btn-logout">Logout</button>
+					</form>
+				</li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Menu Header -->
+    <section class="menu-header">
+        <div class="menu-header-content">
+            <h1>Our Delicious Menu</h1>
+            <p>Explore our wide range of dishes prepared with love</p>
+            
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <form th:action="@{/menu/search}" method="get">
+                    <input type="text" 
+                           name="keyword" 
+                           placeholder="Search for dishes..." 
+                           th:value="${searchKeyword}">
+                    <button type="submit">🔍 Search</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Category Filter -->
+    <section class="category-filter">
+        <div class="filter-container">
+            <a th:href="@{/menu}" 
+               th:classappend="${selectedCategory == 'all' ? 'active' : ''}">All</a>
+            <a th:each="cat : ${categories}" 
+               th:href="@{/menu/category/{cat}(cat=${cat})}" 
+               th:text="${cat}"
+               th:classappend="${selectedCategory == cat ? 'active' : ''}"></a>
+        </div>
+    </section>
+
+    <!-- Menu Grid -->
+    <section class="menu-grid-section">
+        <div class="container">
+            <!-- Success/Error Messages -->
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <!-- No Results Message -->
+            <div th:if="${dishes.empty}" class="no-results">
+                <h3>No dishes found</h3>
+                <p>Try searching with different keywords or category</p>
+                <a th:href="@{/menu}" class="btn-primary">View All Menu</a>
+            </div>
+
+            <!-- Dishes Grid -->
+            <div class="dishes-grid" th:if="${!dishes.empty}">
+                <div class="dish-card" th:each="dish : ${dishes}">
+                    <div class="dish-image">
+						<img th:src="${dish.imagePath != null} ? @{${dish.imagePath}} : @{/images/dish1.jpg}"
+						     th:alt="${dish.name}">
+                        <span class="dish-category" th:text="${dish.category}">Category</span>
+                    </div>
+                    <div class="dish-info">
+                        <h3 th:text="${dish.name}">Dish Name</h3>
+                        <p class="dish-description" th:text="${dish.description}">Description</p>
+                        <div class="dish-details">
+                            <span class="dish-price" th:text="'₹' + ${dish.price}">₹0.00</span>
+                            
+                        </div>
+                        <div class="dish-actions">
+                            <form th:action="@{/cart/add/{id}(id=${dish.id})}" method="post">
+                                <input type="number" name="quantity" value="1" min="1" max="10">
+                                <button type="submit" class="btn-add">Add to Cart</button>
+                            </form>
+                            <a th:href="@{/menu/dish/{id}(id=${dish.id})}" class="btn-details">Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>RestaurantApp</h3>
+                <p>Serving delicious meals since 2024</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a th:href="@{/}">Home</a></li>
+                    <li><a th:href="@{/menu}">Menu</a></li>
+                    <li><a th:href="@{/about}">About</a></li>
+                    <li><a th:href="@{/contact}">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 RestaurantApp. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <style>
+        .menu-header {
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('/images/banner.jpg');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+        
+        .menu-header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .search-bar {
+            max-width: 600px;
+            margin: 2rem auto 0;
+        }
+        
+        .search-bar form {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .search-bar input {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .search-bar button {
+            padding: 1rem 2rem;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .search-bar button:hover {
+            background: #ff5252;
+        }
+        
+        .category-filter {
+            background: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .filter-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            padding: 0 1rem;
+        }
+        
+        .filter-container a {
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .filter-container a:hover,
+        .filter-container a.active {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .menu-grid-section {
+            padding: 3rem 1rem;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .dishes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        
+        .dish-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .dish-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        
+        .dish-image {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .dish-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .dish-category {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #ff6b6b;
+            color: white;
+            padding: 0.25rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        
+        .dish-info {
+            padding: 1.5rem;
+        }
+        
+        .dish-info h3 {
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        
+        .dish-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+        
+        .dish-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .dish-price {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+        
+        .dish-rating {
+            color: #ffc107;
+        }
+        
+        .dish-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .dish-actions form {
+            flex: 2;
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .dish-actions input {
+            width: 60px;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .btn-add {
+            flex: 1;
+            padding: 0.5rem;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-add:hover {
+            background: #ff5252;
+        }
+        
+        .btn-details {
+            flex: 1;
+            padding: 0.5rem;
+            background: #4ecdc4;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        .btn-details:hover {
+            background: #45b7aa;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 4rem 1rem;
+        }
+        
+        .no-results h3 {
+            font-size: 1.5rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+        
+        .no-results p {
+            color: #999;
+            margin-bottom: 2rem;
+        }
+        
+        .btn-primary {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            background: #ff6b6b;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        .btn-primary:hover {
+            background: #ff5252;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 2rem;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        @media (max-width: 768px) {
+            .menu-header h1 {
+                font-size: 2rem;
+            }
+            
+            .filter-container {
+                gap: 0.5rem;
+            }
+            
+            .filter-container a {
+                padding: 0.4rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .dish-actions {
+                flex-direction: column;
+            }
+            
+            .dish-actions form {
+                width: 100%;
+            }
+        }
+    </style>
+</body>
+</html>

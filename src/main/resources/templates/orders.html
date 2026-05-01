@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Orders</title>
+
+    <style>
+
+        body{
+            font-family: Arial, sans-serif;
+            background:#f4f6f8;
+            margin:0;
+            padding:0;
+        }
+
+        .container{
+            width:80%;
+            margin:auto;
+            margin-top:40px;
+        }
+
+        h1{
+            text-align:center;
+            color:#333;
+            margin-bottom:30px;
+        }
+
+        .order-card{
+            background:white;
+            padding:20px;
+            margin-bottom:20px;
+            border-radius:10px;
+            box-shadow:0 3px 10px rgba(0,0,0,0.1);
+            transition:0.2s;
+        }
+
+        .order-card:hover{
+            transform:scale(1.02);
+        }
+
+        .order-id{
+            font-size:20px;
+            font-weight:bold;
+            color:#444;
+        }
+
+        .order-info{
+            margin-top:10px;
+            font-size:16px;
+            color:#555;
+        }
+
+        .status{
+            display:inline-block;
+            padding:5px 12px;
+            border-radius:20px;
+            background:#ff9800;
+            color:white;
+            font-size:14px;
+        }
+
+        .back-btn{
+            display:inline-block;
+            margin-top:30px;
+            padding:10px 20px;
+            background:#28a745;
+            color:white;
+            text-decoration:none;
+            border-radius:6px;
+        }
+
+        .back-btn:hover{
+            background:#218838;
+        }
+
+        .no-orders{
+            text-align:center;
+            background:white;
+            padding:30px;
+            border-radius:10px;
+            box-shadow:0 3px 10px rgba(0,0,0,0.1);
+        }
+
+    </style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h1>My Orders</h1>
+
+<div th:if="${orders.isEmpty()}" class="no-orders">
+    <p>No orders placed yet.</p>
+</div>
+
+<div th:each="order : ${orders}" class="order-card">
+
+    <div class="order-id">
+        Order #<span th:text="${order.id}"></span>
+    </div>
+
+    <div class="order-info">
+        Total Price: ₹<span th:text="${order.totalAmount}"></span>
+    </div>
+
+    <div class="order-info">
+        Status:
+        <span class="status" th:text="${order.status}"></span>
+    </div>
+
+    <!-- ⭐ Show dishes -->
+    <div class="order-info">
+        <b>Dishes:</b>
+        <ul>
+            <li th:each="item : ${order.items}">
+                <span th:text="${item.dish.name}"></span>
+                (Qty: <span th:text="${item.quantity}"></span>)
+            </li>
+        </ul>
+    </div>
+
+</div>
+
+<a href="/menu" class="back-btn">⬅ Back to Menu</a>
+
+</div>
+
+</body>
+</html>

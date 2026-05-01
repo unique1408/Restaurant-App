@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Dish - LINI RESTAURANT</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <!-- Admin Navigation -->
+    <nav class="admin-nav">
+        <div class="admin-nav-container">
+            <div class="admin-logo">
+                <img th:src="@{/images/logo.png}" alt="Restaurant Logo" height="40">
+                <span>Admin Panel</span>
+            </div>
+            <ul class="admin-menu">
+                <li><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                <li><a th:href="@{/admin/dishes}" class="active">Manage Dishes</a></li>
+                <li><a th:href="@{/admin/users}">Manage Users</a></li>
+                <li><a th:href="@{/admin/orders}">Orders</a></li>
+                <li><a th:href="@{/admin/reports}">Reports</a></li>
+                <li><a th:href="@{/}">View Site</a></li>
+                <li><a th:href="@{/logout}">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Admin Main Content -->
+    <div class="admin-main">
+        <div class="page-header">
+            <h1>Add New Dish</h1>
+            <a th:href="@{/admin/dishes}" class="btn-back">← Back to Dishes</a>
+        </div>
+
+        <!-- Add Dish Form -->
+        <div class="form-container">
+            <form th:action="@{/admin/dishes/add}" th:object="${dish}" method="post" enctype="multipart/form-data" class="dish-form">
+                
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h2>Basic Information</h2>
+                    
+                    <div class="form-group">
+                        <label for="name">Dish Name *</label>
+                        <input type="text" 
+                               id="name" 
+                               th:field="*{name}" 
+                               placeholder="Enter dish name" 
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description *</label>
+                        <textarea id="description" 
+                                  th:field="*{description}" 
+                                  placeholder="Enter dish description" 
+                                  rows="4" 
+                                  required></textarea>
+                        <small class="form-text">Maximum 1000 characters</small>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="price">Price (₹) *</label>
+                            <input type="number" 
+                                   id="price" 
+                                   th:field="*{price}" 
+                                   step="0.01" 
+                                   min="0" 
+                                   placeholder="0.00" 
+                                   required>
+                        </div>
+
+                        <div class="form-group half">
+                            <label for="category">Category *</label>
+                            <select id="category" th:field="*{category}" required>
+                                <option value="">Select Category</option>
+                                <option value="Appetizers">Appetizers</option>
+                                <option value="Main Course">Main Course</option>
+                                <option value="Chinese">Chinese</option>
+                                <option value="Indian">Indian</option>
+                                <option value="Italian">Italian</option>
+                                <option value="Mexican">Mexican</option>
+                                <option value="Desserts">Desserts</option>
+                                <option value="Beverages">Beverages</option>
+                                <option value="Salads">Salads</option>
+                                <option value="Soups">Soups</option>
+                                <option value="Fast Food">Fast Food</option>
+                                <option value="Seafood">Seafood</option>
+                                <option value="Vegetarian">Vegetarian</option>
+                                <option value="Vegan">Vegan</option>
+                                <option value="Gluten-Free">Gluten-Free</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Details -->
+                <div class="form-section">
+                    <h2>Additional Details</h2>
+
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="preparationTime">Preparation Time (minutes)</label>
+                            <input type="number" 
+                                   id="preparationTime" 
+                                   th:field="*{preparationTime}" 
+                                   min="1" 
+                                   placeholder="e.g., 30">
+                        </div>
+
+                        
+                    </div>
+
+                    <div class="form-row">
+                        
+
+                        <div class="form-group half">
+                            <label for="available">Availability</label>
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" 
+                                       id="available" 
+                                       th:field="*{available}" 
+                                       checked>
+                                <label for="available">Available for ordering</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dish Image -->
+                <div class="form-section">
+                    <h2>Dish Image</h2>
+                    
+                    <div class="form-group">
+                        <label for="imageFile">Upload Image</label>
+                        <div class="file-upload">
+                            <input type="file" 
+                                   id="imageFile" 
+                                   name="imageFile" 
+                                   accept="image/*" 
+                                   onchange="previewImage(this)">
+                            <div class="file-upload-label">
+                                <span>Choose an image</span>
+                                <small>or drag and drop</small>
+                            </div>
+                        </div>
+                        <small class="form-text">Accepted formats: JPG, PNG, GIF (Max size: 10MB)</small>
+                    </div>
+
+                    <!-- Image Preview -->
+                    <div class="image-preview" id="imagePreview" style="display: none;">
+                        <img src="#" alt="Preview">
+                        <button type="button" class="btn-remove-image" onclick="removeImage()">✕</button>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn-save">Save Dish</button>
+                    <button type="reset" class="btn-reset">Reset</button>
+                    <a th:href="@{/admin/dishes}" class="btn-cancel">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+	<style>
+	/* ===== Page Layout ===== */
+	.admin-main {
+	    padding: 40px;
+	    background: #f4f6f9;
+	    min-height: 100vh;
+	    font-family: 'Segoe UI', sans-serif;
+	}
+
+	.page-header h1 {
+	    font-size: 28px;
+	    font-weight: 600;
+	    color: #2c3e50;
+	}
+
+	.btn-back {
+	    padding: 8px 18px;
+	    background: linear-gradient(135deg, #667eea, #764ba2);
+	    color: #fff;
+	    border-radius: 8px;
+	    text-decoration: none;
+	    font-size: 14px;
+	    transition: 0.3s ease;
+	}
+
+	.btn-back:hover {
+	    opacity: 0.85;
+	}
+
+	/* ===== Card Form ===== */
+	.form-container {
+	    background: #ffffff;
+	    border-radius: 16px;
+	    padding: 35px;
+	    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+	}
+
+	/* ===== Sections ===== */
+	.form-section {
+	    margin-bottom: 35px;
+	}
+
+	.form-section h2 {
+	    font-size: 18px;
+	    font-weight: 600;
+	    color: #444;
+	    margin-bottom: 20px;
+	    padding-bottom: 8px;
+	    border-bottom: 2px solid #eee;
+	}
+
+	/* ===== Inputs ===== */
+	.form-group label {
+	    font-weight: 500;
+	    color: #555;
+	    margin-bottom: 6px;
+	    display: block;
+	}
+
+	.form-group input,
+	.form-group textarea,
+	.form-group select {
+	    width: 100%;
+	    padding: 12px 14px;
+	    border-radius: 10px;
+	    border: 1px solid #ddd;
+	    font-size: 14px;
+	    transition: 0.3s ease;
+	    background: #fafafa;
+	}
+
+	.form-group input:focus,
+	.form-group textarea:focus,
+	.form-group select:focus {
+	    border-color: #667eea;
+	    background: #fff;
+	    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+	    outline: none;
+	}
+
+	/* ===== Layout ===== */
+	.form-row {
+	    display: flex;
+	    gap: 20px;
+	}
+
+	.form-group.half {
+	    flex: 1;
+	}
+
+	/* ===== Checkbox ===== */
+	.checkbox-wrapper {
+	    display: flex;
+	    align-items: center;
+	    gap: 10px;
+	    margin-top: 10px;
+	}
+
+	/* ===== File Upload ===== */
+	.file-upload {
+	    border: 2px dashed #ccc;
+	    border-radius: 12px;
+	    padding: 30px;
+	    text-align: center;
+	    transition: 0.3s ease;
+	    background: #fafafa;
+	}
+
+	.file-upload:hover {
+	    border-color: #667eea;
+	    background: #f0f3ff;
+	}
+
+	.file-upload-label span {
+	    font-weight: 600;
+	    color: #555;
+	}
+
+	.file-upload-label small {
+	    color: #888;
+	}
+
+	/* ===== Image Preview ===== */
+	.image-preview img {
+	    margin-top: 15px;
+	    border-radius: 12px;
+	    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+	}
+
+	/* ===== Buttons ===== */
+	.form-actions {
+	    display: flex;
+	    gap: 15px;
+	    margin-top: 30px;
+	}
+
+	.btn-save {
+	    padding: 12px 28px;
+	    border-radius: 10px;
+	    border: none;
+	    background: linear-gradient(135deg, #28a745, #218838);
+	    color: white;
+	    font-size: 15px;
+	    cursor: pointer;
+	    transition: 0.3s ease;
+	}
+
+	.btn-save:hover {
+	    transform: translateY(-2px);
+	    box-shadow: 0 8px 20px rgba(40,167,69,0.3);
+	}
+
+	.btn-reset {
+	    padding: 12px 28px;
+	    border-radius: 10px;
+	    border: none;
+	    background: linear-gradient(135deg, #ffc107, #e0a800);
+	    color: #333;
+	    font-size: 15px;
+	    cursor: pointer;
+	}
+
+	.btn-cancel {
+	    padding: 12px 28px;
+	    border-radius: 10px;
+	    background: #6c757d;
+	    color: white;
+	    text-decoration: none;
+	    font-size: 15px;
+	    text-align: center;
+	}
+
+	/* ===== Responsive ===== */
+	@media (max-width: 768px) {
+	    .form-row {
+	        flex-direction: column;
+	    }
+
+	    .form-actions {
+	        flex-direction: column;
+	    }
+
+	    .btn-save,
+	    .btn-reset,
+	    .btn-cancel {
+	        width: 100%;
+	    }
+	}
+	</style>
+    <script>
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            const previewImg = preview.querySelector('img');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    preview.style.display = 'inline-block';
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        function removeImage() {
+            const fileInput = document.getElementById('imageFile');
+            const preview = document.getElementById('imagePreview');
+            
+            fileInput.value = '';
+            preview.style.display = 'none';
+            preview.querySelector('img').src = '#';
+        }
+        
+        // Form validation
+        document.querySelector('.dish-form').addEventListener('submit', function(e) {
+            const price = document.getElementById('price').value;
+            const name = document.getElementById('name').value.trim();
+            
+            if (!name) {
+                e.preventDefault();
+                alert('Please enter a dish name');
+                return;
+            }
+            
+            if (price <= 0) {
+                e.preventDefault();
+                alert('Please enter a valid price greater than 0');
+                return;
+            }
+        });
+    </script>
+</body>
+</html>

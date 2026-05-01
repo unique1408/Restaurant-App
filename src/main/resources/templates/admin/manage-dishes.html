@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Dishes - LINI RESTAURANT</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <!-- Admin Navigation -->
+    <nav class="admin-nav">
+        <div class="admin-nav-container">
+            <div class="admin-logo">
+                <img th:src="@{/images/logo.png}" alt="Restaurant Logo" height="40">
+                <span>Admin Panel</span>
+            </div>
+            <ul class="admin-menu">
+                <li><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                <li><a th:href="@{/admin/dishes}" class="active">Manage Dishes</a></li>
+                <li><a th:href="@{/admin/users}">Manage Users</a></li>
+                <li><a th:href="@{/admin/orders}">Orders</a></li>
+                <li><a th:href="@{/admin/reports}">Reports</a></li>
+                <li><a th:href="@{/}">View Site</a></li>
+                <li><a th:href="@{/logout}">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Admin Main Content -->
+    <div class="admin-main">
+        <div class="page-header">
+            <h1>Manage Dishes</h1>
+            <a th:href="@{/admin/dishes/add}" class="btn-add">+ Add New Dish</a>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+        <!-- Search and Filter -->
+        <div class="search-filter">
+            <div class="search-box">
+                <input type="text" id="searchDish" placeholder="Search dishes..." onkeyup="searchDishes()">
+                <span class="search-icon">🔍</span>
+            </div>
+            <div class="filter-box">
+                <select id="categoryFilter" onchange="filterByCategory()">
+                    <option value="all">All Categories</option>
+                    <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat}"></option>
+                </select>
+                <select id="availabilityFilter" onchange="filterByAvailability()">
+                    <option value="all">All Dishes</option>
+                    <option value="available">Available Only</option>
+                    <option value="unavailable">Unavailable Only</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Dishes Table -->
+        <div class="table-container">
+            <table class="data-table" id="dishesTable">
+                <thead>
+                    <tr>
+						<th>Select</th>
+                        <th>Image</th>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="dish : ${dishes}" th:data-category="${dish.category}" th:data-available="${dish.available}">
+						
+						<td>
+						    <input type="checkbox"
+						           class="dish-select"
+						           th:value="${dish.id}"
+						           onchange="updateSelectedCount()">
+						</td>
+						
+                        <td class="image-cell">
+                            <img th:src="${dish.imagePath != null ? dish.imagePath : '/images/dish1.jpg'}" 
+                                 th:alt="${dish.name}" 
+                                 class="dish-thumbnail">
+                        </td>
+                        <td th:text="${dish.id}">1</td>
+                        <td th:text="${dish.name}">Dish Name</td>
+                        <td th:text="${dish.category}">Category</td>
+                        <td th:text="'$' + ${dish.price}">$0.00</td>
+                        <td>
+                            <span class="status-badge" th:classappend="${dish.available} ? 'status-available' : 'status-unavailable'"
+                                  th:text="${dish.available} ? 'Available' : 'Unavailable'">
+                                Available
+                            </span>
+                        </td>
+                        
+                        <td class="actions-cell">
+                            <a th:href="@{/admin/dishes/edit/{id}(id=${dish.id})}" class="btn-edit" title="Edit">✏️</a>
+                            <a th:href="@{/admin/dishes/delete/{id}(id=${dish.id})}" 
+                               class="btn-delete" 
+                               title="Delete"
+                               onclick="return confirm('Are you sure you want to delete this dish?')">🗑️</a>
+                            <a th:href="@{/menu/dish/{id}(id=${dish.id})}" 
+                               class="btn-view" 
+                               title="View" 
+                               target="_blank">👁️</a>
+                            <button class="btn-toggle" 
+                                    th:attr="data-id=${dish.id}, data-available=${dish.available}"
+                                    onclick="toggleAvailability(this)"
+                                    th:title="${dish.available} ? 'Mark as Unavailable' : 'Mark as Available'">
+                                <span th:text="${dish.available} ? '🔴' : '🟢'"></span>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div class="bulk-actions">
+            <h3>Bulk Actions</h3>
+            <div class="bulk-buttons">
+                <button class="btn-bulk" onclick="bulkAvailability(true)">Mark Selected as Available</button>
+                <button class="btn-bulk" onclick="bulkAvailability(false)">Mark Selected as Unavailable</button>
+                <button class="btn-bulk btn-danger" onclick="bulkDelete()">Delete Selected</button>
+            </div>
+            <div class="bulk-select">
+                <label>
+                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll()"> Select All
+                </label>
+                <span id="selectedCount">0</span> items selected
+            </div>
+        </div>
+    </div>
+
+    <style>
+	
+		/* Admin Navbar */
+		.admin-nav{
+		    background-color:#2c3e50;
+		    padding:0;
+		    width:100%;
+		    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+		}
+
+		/* Container */
+		.admin-nav-container{
+		    max-width:1200px;
+		    margin:auto;
+		    display:flex;
+		    justify-content:space-between;
+		    align-items:center;
+		    padding:10px 20px;
+		}
+
+		/* Logo Section */
+		.admin-logo{
+		    display:flex;
+		    align-items:center;
+		    gap:10px;
+		    color:white;
+		    font-size:18px;
+		    font-weight:600;
+		}
+
+		/* Menu */
+		.admin-menu{
+		    list-style:none;
+		    display:flex;
+		    align-items:center;
+		    gap:18px;
+		    margin:0;
+		    padding:0;
+		}
+
+		/* Menu Links */
+		.admin-menu li a{
+		    text-decoration:none;
+		    color:#ecf0f1;
+		    font-size:15px;
+		    font-weight:500;
+		    padding:6px 10px;
+		    border-radius:5px;
+		    transition:all 0.3s ease;
+		}
+
+		/* Hover Effect */
+		.admin-menu li a:hover{
+		    background:#34495e;
+		    color:#ffffff;
+		}
+
+		/* Active Page */
+		.admin-menu li a.active{
+		    background:#e67e22;
+		    color:white;
+		}
+
+		/* Logout Button Style */
+		.admin-menu li:last-child a{
+		    background:#e74c3c;
+		    color:white;
+		}
+
+		.admin-menu li:last-child a:hover{
+		    background:#c0392b;
+		}	
+	
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .btn-add {
+            padding: 0.75rem 1.5rem;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        .btn-add:hover {
+            background: #218838;
+        }
+        
+        .search-filter {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .search-box {
+            flex: 2;
+            position: relative;
+            min-width: 250px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+        
+        .filter-box {
+            flex: 1;
+            display: flex;
+            gap: 0.5rem;
+            min-width: 300px;
+        }
+        
+        .filter-box select {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th {
+            background: #f8f9fa;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .image-cell {
+            width: 60px;
+        }
+        
+        .dish-thumbnail {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .status-available {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-unavailable {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .actions-cell {
+            white-space: nowrap;
+        }
+        
+        .btn-edit, .btn-delete, .btn-view, .btn-toggle {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            margin: 0 0.25rem;
+            text-decoration: none;
+            border: none;
+            background: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn-edit:hover, .btn-delete:hover, .btn-view:hover, .btn-toggle:hover {
+            transform: scale(1.2);
+        }
+        
+        .bulk-actions {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .bulk-actions h3 {
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+        
+        .bulk-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn-bulk {
+            padding: 0.5rem 1rem;
+            background: #17a2b8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-bulk:hover {
+            background: #138496;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .bulk-select {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .search-filter {
+                flex-direction: column;
+            }
+            
+            .filter-box {
+                flex-direction: column;
+            }
+            
+            .data-table {
+                font-size: 0.9rem;
+            }
+            
+            .actions-cell {
+                display: flex;
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+
+    <script>
+        // Search functionality
+        function searchDishes() {
+            const input = document.getElementById('searchDish');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('dishesTable');
+            const rows = table.getElementsByTagName('tr');
+            
+            for (let i = 1; i < rows.length; i++) {
+                const nameCell = rows[i].getElementsByTagName('td')[2];
+                if (nameCell) {
+                    const textValue = nameCell.textContent || nameCell.innerText;
+                    rows[i].style.display = textValue.toLowerCase().indexOf(filter) > -1 ? '' : 'none';
+                }
+            }
+        }
+        
+        // Filter by category
+        function filterByCategory() {
+            const category = document.getElementById('categoryFilter').value;
+            const table = document.getElementById('dishesTable');
+            const rows = table.getElementsByTagName('tr');
+            
+            for (let i = 1; i < rows.length; i++) {
+                const rowCategory = rows[i].getAttribute('data-category');
+                if (category === 'all' || rowCategory === category) {
+                    rows[i].style.display = '';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+        }
+        
+        // Filter by availability
+        function filterByAvailability() {
+            const availability = document.getElementById('availabilityFilter').value;
+            const table = document.getElementById('dishesTable');
+            const rows = table.getElementsByTagName('tr');
+            
+            for (let i = 1; i < rows.length; i++) {
+                const rowAvailable = rows[i].getAttribute('data-available') === 'true';
+                
+                if (availability === 'all') {
+                    rows[i].style.display = '';
+                } else if (availability === 'available' && rowAvailable) {
+                    rows[i].style.display = '';
+                } else if (availability === 'unavailable' && !rowAvailable) {
+                    rows[i].style.display = '';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+        }
+        
+        // Toggle dish availability
+		function toggleAvailability(button) {
+
+		    const dishId = button.getAttribute('data-id');
+
+		    fetch(`/admin/dishes/${dishId}/toggle-availability`, {
+		        method: 'POST'
+		    })
+		    .then(response => {
+		        if (response.ok) {
+		            location.reload();
+		        } else {
+		            alert("Error updating availability");
+		        }
+		    })
+		    .catch(error => {
+		        console.error(error);
+		        alert("Server error");
+		    });
+		}
+        
+        // Select all functionality
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.dish-select');
+            const selectedCount = document.getElementById('selectedCount');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+            
+            updateSelectedCount();
+        }
+        
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('.dish-select:checked');
+            document.getElementById('selectedCount').textContent = checkboxes.length;
+        }
+        
+        // Bulk availability update
+        function bulkAvailability(available) {
+            const checkboxes = document.querySelectorAll('.dish-select:checked');
+            const dishIds = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (dishIds.length === 0) {
+                alert('Please select at least one dish');
+                return;
+            }
+            
+            if (confirm(`Update ${dishIds.length} dishes?`)) {
+                fetch('/api/admin/dishes/bulk-availability', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        dishIds: dishIds,
+                        available: available
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error updating dishes');
+                    }
+                });
+            }
+        }
+        
+        // Bulk delete
+        function bulkDelete() {
+            const checkboxes = document.querySelectorAll('.dish-select:checked');
+            const dishIds = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (dishIds.length === 0) {
+                alert('Please select at least one dish');
+                return;
+            }
+            
+            if (confirm(`Are you sure you want to delete ${dishIds.length} dishes?`)) {
+                fetch('/api/admin/dishes/bulk-delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dishIds)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error deleting dishes');
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

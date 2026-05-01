@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - LINI RESTAURANT</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <!-- Admin Navigation -->
+    <nav class="admin-nav">
+        <div class="admin-nav-container">
+            <div class="admin-logo">
+                <img th:src="@{/images/logo.png}" alt="Restaurant Logo" height="40">
+                <span>Admin Panel</span>
+            </div>
+            <ul class="admin-menu">
+                <li><a th:href="@{/admin/dashboard}" class="active">Dashboard</a></li>
+                <li><a th:href="@{/admin/dishes}">Manage Dishes</a></li>
+                <li><a th:href="@{/admin/users}">Manage Users</a></li>
+                <li><a th:href="@{/admin/all-orders}">Orders</a></li>
+                <li><a th:href="@{/admin/reports}">Reports</a></li>
+                <li><a th:href="@{/}">View Site</a></li>
+				<li>
+				    <form th:action="@{/logout}" method="post" style="display:inline;">
+				        <button type="submit" style="background:none;border:none;color:white;cursor:pointer;">
+				            Logout
+				        </button>
+				    </form>
+				</li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Admin Main Content -->
+    <div class="admin-main">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1>Welcome, <span sec:authentication="name">Admin</span>!</h1>
+            <p>Here's what's happening with your restaurant today.</p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🍽️</div>
+                <div class="stat-content">
+                    <h3>Total Dishes</h3>
+                    <p class="stat-number" th:text="${dishCount}">0</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-content">
+                    <h3>Total Users</h3>
+                    <p class="stat-number" th:text="${userCount}">0</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-content">
+                    <h3>Available Dishes</h3>
+                    <p class="stat-number" th:text="${availableDishes}">0</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📦</div>
+                <div class="stat-content">
+                    <h3>Pending Orders</h3>
+                    <p class="stat-number" id="pendingOrders">0</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-content">
+                    <h3>Today's Revenue</h3>
+                    <p class="stat-number" id="todayRevenue">₹0</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-content">
+                    <h3>Average Rating</h3>
+                    <p class="stat-number" id="avgRating">4.5</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h2>Quick Actions</h2>
+            <div class="action-buttons">
+                <a th:href="@{/admin/dishes/add}" class="action-btn">
+                    <span class="action-icon">➕</span>
+                    Add New Dish
+                </a>
+                <a th:href="@{/admin/dishes}" class="action-btn">
+                    <span class="action-icon">📝</span>
+                    Manage Menu
+                </a>
+                <a th:href="@{/admin/users}" class="action-btn">
+                    <span class="action-icon">👥</span>
+                    Manage Users
+                </a>
+                <a th:href="@{/admin/all-orders}" class="action-btn">
+                    <span class="action-icon">📦</span>
+                    View Orders
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="recent-orders">
+            <h2>Recent Orders</h2>
+            <table class="orders-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Time</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="recentOrdersTable">
+                    <tr>
+                        <td colspan="7" class="loading">Loading orders...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Popular Dishes -->
+        <div class="popular-dishes-admin">
+            <h2>Popular Dishes</h2>
+            <div class="dishes-list" id="popularDishesList">
+                <div class="loading">Loading dishes...</div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+		
+		.dish-card-small {
+		    background: #fff;
+		    border-radius: 10px;
+		    padding: 12px;
+		    text-align: center;
+		    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+		    overflow: hidden;
+		}
+
+		.dish-card-small img {
+		    width: 100%;
+		    height: 150px;
+		    object-fit: cover;
+		    border-radius: 8px;
+		}
+
+		.dish-card-small h4 {
+		    margin: 10px 0 5px;
+		    font-size: 16px;
+		    color: #2c3e50;
+		}
+
+		.dish-card-small p {
+		    font-size: 14px;
+		    color: #777;
+		}
+        .admin-nav {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 0;
+        }
+        
+        .admin-nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .admin-logo span {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .admin-menu {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+        
+        .admin-menu a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        .admin-menu a:hover,
+        .admin-menu a.active {
+            background: #34495e;
+        }
+        
+        .admin-main {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .welcome-section {
+            margin-bottom: 2rem;
+        }
+        
+        .welcome-section h1 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .welcome-section p {
+            color: #666;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+        }
+        
+        .stat-content h3 {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .quick-actions {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .quick-actions h2 {
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .action-btn {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.3s;
+        }
+        
+        .action-btn:hover {
+            background: #e9ecef;
+        }
+        
+        .action-icon {
+            font-size: 1.2rem;
+        }
+        
+        .recent-orders,
+        .popular-dishes-admin {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .recent-orders h2,
+        .popular-dishes-admin h2 {
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+        
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .orders-table th {
+            background: #f8f9fa;
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .orders-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-delivered {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #999;
+            padding: 2rem;
+        }
+        
+		.dishes-list {
+		    display: grid;
+		    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		    gap: 20px;
+		}
+        
+        @media (max-width: 768px) {
+            .admin-nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .admin-menu {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .orders-table {
+                font-size: 0.9rem;
+            }
+            
+            .orders-table th,
+            .orders-table td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+
+    <script>
+        // Fetch and display recent orders
+        fetch('/api/admin/recent-orders')
+            .then(response => response.json())
+            .then(orders => {
+                const tableBody = document.getElementById('recentOrdersTable');
+                if (orders.length > 0) {
+                    tableBody.innerHTML = orders.map(order => `
+                        <tr>
+                            <td>#${order.id}</td>
+                            <td>${order.userName}</td>
+                            <td>${order.itemCount} items</td>
+                            <td>₹${order.totalAmount}</td>
+                            <td><span class="status-badge status-${order.status.toLowerCase()}">${order.status}</span></td>
+                            <td>${new Date(order.orderDate).toLocaleTimeString()}</td>
+                            <td><a href="/admin/orders/${order.id}" class="view-link">View</a></td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="7" class="loading">No recent orders</td></tr>';
+                }
+            });
+
+        // Fetch and display popular dishes
+       fetch('/admin/api/admin/recent-orders')
+            .then(response => response.json())
+            .then(dishes => {
+                const list = document.getElementById('popularDishesList');
+                if (dishes.length > 0) {
+                    list.innerHTML = dishes.map(dish => `
+                        <div class="dish-card-small">
+                            <img src="${dish.imagePath || '/images/dish1.jpg'}" alt="${dish.name}">
+                            <h4>${dish.name}</h4>
+                            <p>Orders: ${dish.orderCount}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    list.innerHTML = '<div class="loading">No data available</div>';
+                }
+            });
+
+        // Update dashboard stats periodically
+        function updateStats() {
+            fetch('/api/admin/dashboard-stats')
+                .then(response => response.json())
+                .then(stats => {
+                    document.getElementById('pendingOrders').textContent = stats.pendingOrders;
+                    document.getElementById('todayRevenue').textContent = '₹' + stats.todayRevenue;
+                    document.getElementById('avgRating').textContent = stats.avgRating;
+                });
+        }
+        
+        // Update stats every 30 seconds
+        setInterval(updateStats, 30000);
+    </script>
+</body>
+</html>
